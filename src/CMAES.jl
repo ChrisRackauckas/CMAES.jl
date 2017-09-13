@@ -41,7 +41,7 @@ type CMAESOpt
     fmins::Vector{Float64}
     # report
     last_report_time::Float64
-    file::String = timename("CMAES.jld")
+    file::String
 end
 
 function CMAESOpt(f, x0, σ0, lo, hi; λ = 0, penalty = false)
