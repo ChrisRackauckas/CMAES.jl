@@ -39,7 +39,9 @@ type CMAESOpt
     xmin::Vector{Float64}
     fmin::Float64
     fmins::Vector{Float64}
+    # report
     last_report_time::Float64
+    file::String = timename("CMAES.jld")
 end
 
 function CMAESOpt(f, x0, σ0, lo, hi; λ = 0, penalty = false)
@@ -75,7 +77,8 @@ function CMAESOpt(f, x0, σ0, lo, hi; λ = 0, penalty = false)
                     σ, cc, cσ, c1, cμ, dσ,
                     x̄, pc, pσ, D, B, BD, C, χₙ,
                     arx, ary, arz, arfitness, arindex,
-                    xmin, fmin, [], time())
+                    xmin, fmin, [],
+                    time(), timename("CMAES.jld"))
 end
 
 @replace function update_candidates!(opt::CMAESOpt, pool)
@@ -152,7 +155,7 @@ end
 @replace function trace_state(opt::CMAESOpt, iter)
     time() - last_report_time < 1 && return
     # write to file
-    JLD.save(joinpath(tempdir(), "CMAES.jld"), "x", xmin, "y", fmin)
+    JLD.save(file, "x", xmin, "y", fmin)
     # Display some information every iteration
     @printf("iter: %d    fcount: %d    fval: %2.2e    fmin: %2.2e    axis-ratio: %2.2e \n",
             iter, λ * iter, arfitness[1], fmin, maximum(D) / minimum(D) )
