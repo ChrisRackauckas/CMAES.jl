@@ -78,7 +78,7 @@ function CMAESOpt(f, x0, σ0, lo, hi; λ = 0, penalty = false)
                     x̄, pc, pσ, D, B, BD, C, χₙ,
                     arx, ary, arz, arfitness, arindex,
                     xmin, fmin, [],
-                    time(), timename("CMAES.jld"))
+                    time(), minute() * "_CMAES.jld")
 end
 
 @replace function update_candidates!(opt::CMAESOpt, pool)
@@ -93,8 +93,8 @@ end
     arfitness = arfitness[arindex]  # minimization
     if arfitness[1] < fmin
         xmin, fmin = arx[:, arindex[1]], arfitness[1]
-        push!(fmins, fmin)
     end
+    push!(fmins, arfitness[1])
 end
 
 @replace function update_parameters!(opt::CMAESOpt, iter)
@@ -152,13 +152,14 @@ end
     return optnew
 end
 
-@replace function trace_state(opt::CMAESOpt, iter)
-    time() - last_report_time < 1 && return
+@replace function trace_state(opt::CMAESOpt, iter, fcount)
+    elapsed_time = time() - last_report_time
+    elapsed_time < 1 && return
     # write to file
     JLD.save(file, "x", xmin, "y", fmin)
     # Display some information every iteration
-    @printf("iter: %d    fcount: %d    fval: %2.2e    fmin: %2.2e    axis-ratio: %2.2e \n",
-            iter, λ * iter, arfitness[1], fmin, maximum(D) / minimum(D) )
+    @printf("iter: %d  elapsed-time: %.2f fcount: %d  fval: %2.2e  fmin: %2.2e  axis-ratio: %2.2e \n",
+            iter, elapsed_time, fcount, arfitness[1], fmin, maximum(D) / minimum(D) )
     last_report_time = time()
     return nothing
 end
@@ -166,22 +167,23 @@ end
 function cmaes(f::Function, x0, σ0, lo, hi; pool = workers(), maxfevals = 0, o...)
     maxfevals = (maxfevals == 0) ? 1e3N^2 : maxfevals
     opt = CMAESOpt(f, x0, σ0, lo, hi; o...)
-    maxitr = maxfevals ÷ opt.λ + 1
-    for iter in 1:maxitr
+    fcount = iter = 0
+    while fcount < maxfevals
+        iter += 1; fcount += opt.λ
         update_candidates!(opt, pool)
         update_parameters!(opt, iter)
-        trace_state(opt, iter)
-        terminate(opt) && (opt = restart(opt))
+        trace_state(opt, iter, fcount)
+        if terminate(opt) opt, iter = restart(opt), 0 end
     end
     return opt.xmin, opt.fmin
 end
 
-minibatch(x, b) = [x[i:min(end, i+b-1)] for i in 1:b:length(x)]
+minibatch(x, b) = [x[i:min(end, i+b-1)] for i in 1:b:max(1, length(x)-b+1)]
 
 function optimize(f, x0, σ0, lo, hi; pool = workers(), restarts = 1, λ = 0, o...)
     λ = λ == 0 ? Int(4 + 3log(length(x0))) : λ
     pop_pools = minibatch(pool, λ) # population pools
-    head_pool = pool[1:λ:end]
+    head_pool = first.(pool)
     fun = i -> begin
         x0 = (i == 1 || rand() < 0.5) ? x0 : sample(lo, hi)
         idx = findfirst(head_pool, myid())
