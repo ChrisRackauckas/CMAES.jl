@@ -130,10 +130,14 @@ end
     # TolHistFun = 1e-12:  the range of the best function values during the last
     # 10 + ⌈30 D / λ⌉ iterations is smaller than TolHistFun
     lastiter = 10 + round(Int, 30N/λ)
+    if arfitness[1] == arfitness[ceil(Int, 0.7 * λ)]
+        σ *= exp(0.2 + cσ / dσ)
+        println("warning: flat fitness, consider reformulating the objective")
+    end
     length(fmins) > lastiter && ptp(fmins[end-lastiter:end]) < 1e-12 ||
     # EqualFunVals:  in more than 1/3rd of the last D iterations the objective
     # function value of the best and the k-th best solution are identical
-    arfitness[1] == arfitness[round(Int, 0.33 * λ)] ||
+    # arfitness[1] == arfitness[ceil(Int, 0.7 * λ)] ||
     # TolX:  all components of pc and all square roots of diagonal components of C,
     # multiplied by σ / σ0 , are smaller than TolX.
     max(sqrt(maxabs(diag(C))), maxabs(pc)) * σ / σ0 < 1e-12 ||
