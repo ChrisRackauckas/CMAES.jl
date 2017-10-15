@@ -50,7 +50,7 @@ function CMAESOpt(f, x0, σ0, lo, hi; λ = 0, penalty = false)
     # Strategy parameter setting: Selection
     λ = λ == 0 ? Int(4 + 3log(N)) : λ
     μ = λ ÷ 2                    # number of parents/points for recombination
-    w = log(μ + 1/2) .- log(1:μ) # μXone array for weighted recombination
+    w = log(μ + 1/2) .- log.(1:μ) # μXone array for weighted recombination
     normalize!(w, 1)             # normalize recombination w array
     μeff = 1 / sum(abs2, w)     # variance-effectiveness of sum w_i x_i
     #########
@@ -140,7 +140,7 @@ end
     # arfitness[1] == arfitness[ceil(Int, 0.7 * λ)] ||
     # TolX:  all components of pc and all square roots of diagonal components of C,
     # multiplied by σ / σ0 , are smaller than TolX.
-    max(sqrt(maxabs(diag(C))), maxabs(pc)) * σ / σ0 < 1e-12 ||
+    max(sqrt(maximum(abs, diag(C))), maximum(abs, pc)) * σ / σ0 < 1e-12 ||
     # TolUpSigma = 1e-12: σ / σ0 >= 1e20 * maximum(D)
     σ / σ0 > 1e20 * maximum(D) ||
     # Stagnation: TODO
@@ -210,7 +210,7 @@ end
 sample(lo, hi) = lo .+ rand(size(lo)) .* (hi .- lo)
 
 function boundpenalty(x, lo, hi)
-    σ = (hi .- lo) ./ 30
+    σ = (hi .- lo) ./ 100
     sum(exp.(max.(x .- hi, zero(x)) ./ σ) .- 1, 1) +
     sum(exp.(max.(lo .- x, zero(x)) ./ σ) .- 1, 1)
 end
