@@ -187,7 +187,7 @@ minibatch(x, b) = [x[i:min(end, i+b-1)] for i in 1:b:max(1, length(x)-b+1)]
 function optimize(f, x0, σ0, lo, hi; pool = workers(), restarts = 1, λ = 0, o...)
     λ = λ == 0 ? Int(4 + 3log(length(x0))) : λ
     pop_pools = minibatch(pool, λ) # population pools
-    head_pool = first.(pool)
+    head_pool = first.(pop_pools)
     fun = i -> begin
         x0 = (i == 1 || rand() < 0.5) ? x0 : sample(lo, hi)
         idx = findfirst(head_pool, myid())
