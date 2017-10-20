@@ -1,9 +1,9 @@
-using CMAES
-
 @everywhere rastrigin(x) = 10length(x) + sum(x.^2 - 10cos(2π * x))
 
 N = 100
 x0, σ0, lo, hi = 0.3ones(N), 0.2, fill(-5.12, N), fill(5.12, N)
+
+using CMAES
 xmin, fmin = CMAES.minimize(rastrigin, x0, σ0, lo, hi; maxfevals = 10000)
 
 using CMA
