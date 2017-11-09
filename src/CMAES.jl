@@ -75,12 +75,12 @@ function CMAESOpt(f, x0, σ0, lo, hi; λ = 0, penalty = false)
     arfitness = zeros(λ);  arindex = zeros(λ)
     @printf("%i-%i CMA-ES\n", λ, μ)
     return CMAESOpt(f, N, σ0, lo, hi, penalty,
-                    λ, μ, w, μeff,
-                    σ, cc, cσ, c1, cμ, dσ,
-                    x̄, pc, pσ, D, B, BD, C, χₙ,
-                    arx, ary, arz, arfitness, arindex,
-                    xmin, fmin, [],
-                    time(), minute() * "_CMAES.jld")
+    λ, μ, w, μeff,
+    σ, cc, cσ, c1, cμ, dσ,
+    x̄, pc, pσ, D, B, BD, C, χₙ,
+    arx, ary, arz, arfitness, arindex,
+    xmin, fmin, [],
+    time(), minute() * "_CMAES.jld")
 end
 
 @replace function update_candidates!(opt::CMAESOpt, pool)
@@ -165,7 +165,7 @@ end
     JLD.save(file, "x", xmin, "y", fmin)
     # Display some information every iteration
     @printf("iter: %d  elapsed-time: %.2f fcount: %d  fval: %2.2e  fmin: %2.2e  axis-ratio: %2.2e \n",
-            iter, elapsed_time, fcount, arfitness[1], fmin, maximum(D) / minimum(D) )
+    iter, elapsed_time, fcount, arfitness[1], fmin, maximum(D) / minimum(D) )
     last_report_time = time()
     return nothing
 end
@@ -191,15 +191,15 @@ function optimize(f, x0, σ0, lo, hi; pool = workers(), restarts = 1, λ = 0, o.
     pop_pools = minibatch(pool, λ) # population pools
     head_pool = first.(pop_pools)
     fun = i -> begin
-        x0 = (i == 1 || rand() < 0.5) ? x0 : sample(lo, hi)
-        idx = findfirst(head_pool, myid())
-        cmaes(f, x0, σ0, lo, hi; pool = pop_pools[idx], λ = λ, o...)
-    end
-    res = pmap(WorkerPool(head_pool), fun, 1:restarts)
-    x, y = hcat(res...)
-    fmin, index = findmin(y)
-    xmin = x[:, index]
-    return xmin, fmin
+    x0 = (i == 1 || rand() < 0.5) ? x0 : sample(lo, hi)
+    idx = findfirst(head_pool, myid())
+    cmaes(f, x0, σ0, lo, hi; pool = pop_pools[idx], λ = λ, o...)
+end
+res = pmap(WorkerPool(head_pool), fun, 1:restarts)
+x, y = hcat(res...)
+fmin, index = findmin(y)
+xmin = x[:, index]
+return xmin, fmin
 end
 
 minimize = optimize
