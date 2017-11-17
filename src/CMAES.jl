@@ -88,7 +88,7 @@ end
     randn!(arz) # resample
     ary .= BD * arz
     arx .= x̄ .+ σ .* ary
-    arfitness .= pmap(WorkerPool(pool), k -> f(arx[:, k]), 1:λ)
+    arfitness .= pmap(WorkerPool(pool), f, [arx[:, k] for k in 1:λ])
     if penalty arfitness .+= vec(boundpenalty(arx, lo, hi)) end
     # Sort by fitness and compute weighted mean into x̄
     sortperm!(arindex, arfitness)
@@ -191,15 +191,15 @@ function optimize(f, x0, σ0, lo, hi; pool = workers(), restarts = 1, λ = 0, o.
     pop_pools = minibatch(pool, λ) # population pools
     head_pool = first.(pop_pools)
     fun = i -> begin
-    x0 = (i == 1 || rand() < 0.5) ? x0 : sample(lo, hi)
-    idx = findfirst(head_pool, myid())
-    cmaes(f, x0, σ0, lo, hi; pool = pop_pools[idx], λ = λ, o...)
-end
-res = pmap(WorkerPool(head_pool), fun, 1:restarts)
-x, y = hcat(res...)
-fmin, index = findmin(y)
-xmin = x[:, index]
-return xmin, fmin
+        x0 = (i == 1 || rand() < 0.5) ? x0 : sample(lo, hi)
+        idx = findfirst(head_pool, myid())
+        cmaes(f, x0, σ0, lo, hi; pool = pop_pools[idx], λ = λ, o...)
+    end
+    res = pmap(WorkerPool(head_pool), fun, 1:restarts)
+    x, y = hcat(res...)
+    fmin, index = findmin(y)
+    xmin = x[:, index]
+    return xmin, fmin
 end
 
 minimize = optimize
