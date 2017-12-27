@@ -80,7 +80,7 @@ function CMAESOpt(f, x0, σ0, lo, hi; λ = 0, penalty = false)
                     x̄, pc, pσ, D, B, BD, C, χₙ,
                     arx, ary, arz, arfitness, arindex,
                     xmin, fmin, [],
-                    time(), get(ENV, "CMAES_LOGNAME", "") * "_CMAES.jld")
+                    time(), get(ENV, "CMAES_LOGFILE", "") * "_CMAES.jld")
 end
 
 @replace function update_candidates!(opt::CMAESOpt, pool)
