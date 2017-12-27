@@ -153,6 +153,7 @@ end
 end
 
 @replace function restart(opt::CMAESOpt)
+    @printf("restarting...\n")
     optnew = CMAESOpt(f, sample(lo, hi), σ0, lo, hi; :λ => 2opt.λ)
     optnew.xmin, optnew.fmin = xmin, fmin
     return optnew
@@ -164,8 +165,8 @@ end
     # write to file
     JLD.save(file, "x", xmin, "y", fmin)
     # Display some information every iteration
-    @printf("iter: %d  elapsed-time: %.2f fcount: %d  fval: %2.2e  fmin: %2.2e  axis-ratio: %2.2e \n",
-    iter, elapsed_time, fcount, arfitness[1], fmin, maximum(D) / minimum(D) )
+    @printf("time: %s iter: %d  elapsed-time: %.2f fcount: %d  fval: %2.2e  fmin: %2.2e  axis-ratio: %2.2e \n",
+            now(), iter, elapsed_time, fcount, arfitness[1], fmin, maximum(D) / minimum(D) )
     last_report_time = time()
     return nothing
 end
@@ -219,6 +220,7 @@ function boundpenalty(x, lo, hi)
 end
 
 end
+
 # module CMAES
 #
 # using JLD
