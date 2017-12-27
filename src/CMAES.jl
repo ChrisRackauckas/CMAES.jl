@@ -161,7 +161,6 @@ end
 
 @replace function trace_state(opt::CMAESOpt, iter, fcount)
     elapsed_time = time() - last_report_time
-    elapsed_time < 1 && return
     # write to file
     JLD.save(file, "x", xmin, "y", fmin)
     # Display some information every iteration
