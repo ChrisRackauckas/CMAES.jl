@@ -75,12 +75,12 @@ function CMAESOpt(f, x0, σ0, lo, hi; λ = 0, penalty = false)
     arfitness = zeros(λ);  arindex = zeros(λ)
     @printf("%i-%i CMA-ES\n", λ, μ)
     return CMAESOpt(f, N, σ0, lo, hi, penalty,
-    λ, μ, w, μeff,
-    σ, cc, cσ, c1, cμ, dσ,
-    x̄, pc, pσ, D, B, BD, C, χₙ,
-    arx, ary, arz, arfitness, arindex,
-    xmin, fmin, [],
-    time(), minute() * "_CMAES.jld")
+                    λ, μ, w, μeff,
+                    σ, cc, cσ, c1, cμ, dσ,
+                    x̄, pc, pσ, D, B, BD, C, χₙ,
+                    arx, ary, arz, arfitness, arindex,
+                    xmin, fmin, [],
+                    time(), get(ENV, "CMAES_LOGNAME", minute()) * "_CMAES.jld")
 end
 
 @replace function update_candidates!(opt::CMAESOpt, pool)
