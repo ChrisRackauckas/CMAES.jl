@@ -154,7 +154,8 @@ end
 
 @replace function restart(opt::CMAESOpt)
     @printf("restarting...\n")
-    optnew = CMAESOpt(f, sample(lo, hi), σ0, lo, hi; :λ => 2opt.λ)
+    optnew = CMAESOpt(f, sample(lo, hi), σ0, lo, hi; :λ => λ)
+    # optnew = CMAESOpt(f, sample(lo, hi), σ0, lo, hi; :λ => 2λ)
     optnew.xmin, optnew.fmin = xmin, fmin
     return optnew
 end
