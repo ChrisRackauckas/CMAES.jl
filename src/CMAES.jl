@@ -80,7 +80,7 @@ function CMAESOpt(f, x0, σ0, lo, hi; λ = 0, penalty = false)
                     x̄, pc, pσ, D, B, BD, C, χₙ,
                     arx, ary, arz, arfitness, arindex,
                     xmin, fmin, [],
-                    time(), get(ENV, "CMAES_LOGNAME", minute()) * "_CMAES.jld")
+                    time(), get(ENV, "CMAES_LOGNAME", "") * "_CMAES.jld")
 end
 
 @replace function update_candidates!(opt::CMAESOpt, pool)
@@ -162,7 +162,7 @@ end
 @replace function trace_state(opt::CMAESOpt, iter, fcount)
     elapsed_time = time() - last_report_time
     # write to file
-    JLD.save(file, "x", xmin, "y", fmin)
+    !startswith(file, "_") && JLD.save(file, "x", xmin, "y", fmin)
     # Display some information every iteration
     @printf("time: %s iter: %d  elapsed-time: %.2f fcount: %d  fval: %2.2e  fmin: %2.2e  axis-ratio: %2.2e \n",
             now(), iter, elapsed_time, fcount, arfitness[1], fmin, maximum(D) / minimum(D) )
