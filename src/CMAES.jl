@@ -154,8 +154,7 @@ end
 
 @replace function restart(opt::CMAESOpt)
     @printf("restarting...\n")
-    optnew = CMAESOpt(f, sample(lo, hi), σ0, lo, hi; :λ => λ)
-    # optnew = CMAESOpt(f, sample(lo, hi), σ0, lo, hi; :λ => 2λ)
+    optnew = CMAESOpt(f, sample(lo, hi), σ0, lo, hi; :λ => 2λ)
     optnew.xmin, optnew.fmin = xmin, fmin
     return optnew
 end
@@ -180,7 +179,8 @@ function cmaes(f::Function, x0, σ0, lo, hi; pool = workers(), maxfevals = 0, o.
         update_candidates!(opt, pool)
         update_parameters!(opt, iter)
         trace_state(opt, iter, fcount)
-        if terminate(opt) opt, iter = restart(opt), 0 end
+        terminate(opt) && break
+        # if terminate(opt) opt, iter = restart(opt), 0 end
     end
     return opt.xmin, opt.fmin
 end
