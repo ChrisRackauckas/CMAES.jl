@@ -4,7 +4,7 @@ module CMAES
 
 using JLD, Utils
 
-type CMAESOpt
+mutable struct CMAESOpt
     # fixed hyper-parameters
     f::Function
     N::Int
