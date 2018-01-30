@@ -165,7 +165,11 @@ end
 @replace function trace_state(opt::CMAESOpt, iter, fcount)
     elapsed_time = time() - last_report_time
     # write to file
-    !startswith(file, "_") && JLD.save(file, "x", xmin, "y", fmin)
+    !startswith(file, "_") && JLD.jldopen(file, "w") do fid
+        for s in fieldnames(opt)
+            s != :f && write(fid, string(s), getfield(opt, s))
+        end
+    end
     # Display some information every iteration
     @printf("time: %s iter: %d  elapsed-time: %.2f fcount: %d  fval: %2.2e  fmin: %2.2e  axis-ratio: %2.2e \n",
             now(), iter, elapsed_time, fcount, arfitness[1], fmin, maximum(D) / minimum(D) )
@@ -176,6 +180,12 @@ end
 function cmaes(f::Function, x0, σ0, lo, hi; pool = workers(), maxfevals = 0, o...)
     maxfevals = (maxfevals == 0) ? 1e3N^2 : maxfevals
     opt = CMAESOpt(f, x0, σ0, lo, hi; o...)
+    if isfile(opt.file)
+        d = JLD.load(opt.file)
+        for s in keys(d)
+            hasfield(opt, Symbol(s)) && setfield!(opt, Symbol(s), d[s])
+        end
+    end
     fcount = iter = 0
     while fcount < maxfevals
         iter += 1; fcount += opt.λ
