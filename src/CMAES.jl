@@ -132,11 +132,14 @@ end
     # TolHistFun = 1e-12:  the range of the best function values during the last
     # 10 + ⌈30 D / λ⌉ iterations is smaller than TolHistFun
     lastiter = 10 + round(Int, 30N/λ)
+    PTP::Float64 = parse(get(ENV, "CMAES_PTP", "1e-12"))
+    TERMINATE_ON_FLAT_FITNESS::Bool = parse(get(ENV, "CMAES_TERMINATE_ON_FLAT_FITNESS", "false"))
     if arfitness[1] == arfitness[ceil(Int, 0.7 * λ)]
         σ *= exp(0.2 + cσ / dσ)
         println("warning: flat fitness, consider reformulating the objective")
     end
-    length(fmins) > lastiter && ptp(fmins[end-lastiter:end]) < 1e-12 ||
+    length(fmins) > lastiter && TERMINATE_ON_FLAT_FITNESS && (arfitness[1] == arfitness[ceil(Int, 0.7 * λ)]) ||
+    length(fmins) > lastiter && ptp(fmins[end-lastiter:end]) < PTP ||
     # EqualFunVals:  in more than 1/3rd of the last D iterations the objective
     # function value of the best and the k-th best solution are identical
     # arfitness[1] == arfitness[ceil(Int, 0.7 * λ)] ||
