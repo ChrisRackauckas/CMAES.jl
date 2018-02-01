@@ -136,8 +136,8 @@ end
         σ *= exp(0.2 + cσ / dσ)
         println("warning: flat fitness, consider reformulating the objective")
     end
-    EQUAL_BEST::Int = parse(get(ENV, "CMAES_EQUAL_BEST", "10000000000"))
-    length(fmins) > EQUAL_BEST && ptp(minimums(fmins)[end-EQUAL_BEST:end]) < 1e-12 ||
+    EQUALBEST::Int = parse(get(ENV, "CMAES_EQUALBEST", "10000000000"))
+    length(fmins) > EQUALBEST && ptp(minimums(fmins)[end-EQUALBEST:end]) < 1e-12 ||
     length(fmins) > lastiter && ptp(fmins[end-lastiter:end]) < 1e-12 ||
     # EqualFunVals:  in more than 1/3rd of the last D iterations the objective
     # function value of the best and the k-th best solution are identical
