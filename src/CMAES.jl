@@ -185,16 +185,16 @@ function cmaes(f::Function, x0, σ0, lo, hi; pool = workers(), maxfevals = 0, o.
             hasfield(opt, Symbol(s)) && setfield!(opt, Symbol(s), d[s])
         end
     end
-    fcount = iter = 0
+    fcount = iter = 0; status = 1
     while fcount < maxfevals
         iter += 1; fcount += opt.λ
         update_candidates!(opt, pool)
         update_parameters!(opt, iter)
         trace_state(opt, iter, fcount)
-        terminate(opt) && break
+        terminate(opt) && (status = 0; break)
         # if terminate(opt) opt, iter = restart(opt), 0 end
     end
-    return opt.xmin, opt.fmin
+    return opt.xmin, opt.fmin, status
 end
 
 minibatch(x, b) = [x[i:min(end, i+b-1)] for i in 1:b:max(1, length(x)-b+1)]
@@ -203,24 +203,29 @@ function optimize(f, x0, σ0, lo, hi; pool = workers(), restarts = 1, λ = 0, o.
     λ = λ == 0 ? Int(4 + 3log(length(x0))) : λ
     pop_pools = minibatch(pool, λ) # population pools
     restarts = max(restarts, length(pool) ÷ λ)
-    head_pool = first.(pop_pools)
-    fun = i -> begin
-        x0 = (i == 1 || rand() < 0.5) ? x0 : sample(lo, hi)
-        idx = findfirst(head_pool, myid())
-        cmaes(f, x0, σ0, lo, hi; pool = pop_pools[idx], λ = λ, o...)
+    if restarts > 1
+        head_pool = first.(pop_pools)
+        fun = i -> begin
+            x0 = (i == 1 || rand() < 0.5) ? x0 : sample(lo, hi)
+            idx = findfirst(head_pool, myid())
+            cmaes(f, x0, σ0, lo, hi; pool = pop_pools[idx], λ = λ, o...)
+        end
+        res = pmap(WorkerPool(head_pool), fun, 1:restarts)
+        x, y, statuses = hcat(res...)
+        fmin, index = findmin(y)
+        xmin = x[:, index]
+        status = Int(all(x -> x == 1, statuses))
+    else
+        xmin, ymin, status = cmaes(f, x0, σ0, lo, hi; pool = pool, λ = λ, o...)
     end
-    res = pmap(WorkerPool(head_pool), fun, 1:restarts)
-    x, y = hcat(res...)
-    fmin, index = findmin(y)
-    xmin = x[:, index]
-    return xmin, fmin
+    return xmin, fmin, status
 end
 
 minimize = optimize
 
 function maximize(f, args...; kwargs...)
-    xmin, fmin = optimize(x -> -f(x), args...; kwargs...)
-    return xmin, -fmin
+    xmin, fmin, status = optimize(x -> -f(x), args...; kwargs...)
+    return xmin, -fmin, status
 end
 
 sample(lo, hi) = lo .+ rand(size(lo)) .* (hi .- lo)
