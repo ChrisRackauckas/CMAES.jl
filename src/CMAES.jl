@@ -216,7 +216,7 @@ function optimize(f, x0, σ0, lo, hi; pool = workers(), restarts = 1, λ = 0, o.
         xmin = x[:, index]
         status = Int(all(x -> x == 1, statuses))
     else
-        xmin, ymin, status = cmaes(f, x0, σ0, lo, hi; pool = pool, λ = λ, o...)
+        xmin, fmin, status = cmaes(f, x0, σ0, lo, hi; pool = pool, λ = λ, o...)
     end
     return xmin, fmin, status
 end
