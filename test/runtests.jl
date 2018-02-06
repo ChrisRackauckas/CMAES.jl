@@ -1,4 +1,4 @@
-@everywhere rastrigin(x) = 10length(x) + sum(x.^2 - 10cos(2π * x))
+@everywhere rastrigin(x) = 10length(x) + sum(x.^2 .- 10 .* cos.(2π .* x))
 
 N = 100
 x0, σ0, lo, hi = 0.3ones(N), 0.2, fill(-5.12, N), fill(5.12, N)
