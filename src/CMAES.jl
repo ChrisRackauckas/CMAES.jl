@@ -44,9 +44,10 @@ mutable struct CMAESOpt
     # report
     last_report_time::Float64
     file::String
+    equalbest::Int
 end
 
-function CMAESOpt(f, x0, σ0, lo, hi; λ = 0, penalty = false)
+function CMAESOpt(f, x0, σ0, lo, hi; λ = 0, penalty = false, equalbest = 10^10)
     N, x̄, xmin, fmin, σ = length(x0), x0, x0, f(x0), σ0
     #########
     # Strategy parameter setting: Selection
@@ -80,7 +81,7 @@ function CMAESOpt(f, x0, σ0, lo, hi; λ = 0, penalty = false)
                     x̄, pc, pσ, D, B, BD, C, χₙ,
                     arx, ary, arz, arfitness, arindex,
                     xmin, fmin, [],
-                    time(), get(ENV, "CMAES_LOGFILE", "") * "_CMAES.jld")
+                    time(), "CMAES.jld", equalbest)
 end
 
 @replace function update_candidates!(opt::CMAESOpt, pool)
@@ -136,8 +137,7 @@ end
         σ *= exp(0.2 + cσ / dσ)
         println("warning: flat fitness, consider reformulating the objective")
     end
-    EQUALBEST::Int = parse(get(ENV, "CMAES_EQUALBEST", "10000000000"))
-    length(fmins) > EQUALBEST && ptp(minimums(fmins)[end-EQUALBEST:end]) < 1e-12 ||
+    length(fmins) > equalbest && ptp(minimums(fmins)[end-equalbest:end]) < 1e-12 ||
     length(fmins) > lastiter && ptp(fmins[end-lastiter:end]) < 1e-12 ||
     # EqualFunVals:  in more than 1/3rd of the last D iterations the objective
     # function value of the best and the k-th best solution are identical
@@ -164,7 +164,7 @@ end
 @replace function trace_state(opt::CMAESOpt, iter, fcount)
     elapsed_time = time() - last_report_time
     # write to file
-    !startswith(file, "_") && JLD.jldopen(file, "w") do fid
+    JLD.jldopen(file, "w") do fid
         for s in fieldnames(opt)
             s != :f && write(fid, string(s), getfield(opt, s))
         end
