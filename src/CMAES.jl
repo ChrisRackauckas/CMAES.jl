@@ -181,8 +181,8 @@ function cmaes(f::Function, x0, σ0, lo, hi; pool = workers(), maxfevals = 0, o.
     opt = CMAESOpt(f, x0, σ0, lo, hi; o...)
     if isfile(opt.file)
         d = JLD.load(opt.file)
-        for s in keys(d)
-            hasfield(opt, Symbol(s)) && setfield!(opt, Symbol(s), d[s])
+        get(d, "N", opt.N) === opt.N && for s in keys(d)
+            hasfield(opt, Symbol(s)) && s ∉ ["last_report_time", "equalbest"] && setfield!(opt, Symbol(s), d[s])
         end
     end
     fcount = iter = 0; status = 1
