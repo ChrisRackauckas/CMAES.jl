@@ -47,7 +47,7 @@ mutable struct CMAESOpt
     equalbest::Int
 end
 
-function CMAESOpt(f, x0, σ0, lo, hi; λ = 0, penalty = false, equalbest = 10^10)
+function CMAESOpt(f, x0, σ0, lo, hi; λ = 0, penalty = false, equalbest = 10^10, o...)
     N, x̄, xmin, fmin, σ = length(x0), x0, x0, f(x0), σ0
     #########
     # Strategy parameter setting: Selection
