@@ -20,7 +20,7 @@ end
 
 function plot_progress(f, eval_seq, nprog; label = "")
     q10, q50, q90 = get_progress(f, eval_seq, nprog)
-    plot!(q50; ribbon = (q10, q90), label = label)
+    plot!(eval_seq, q50; ribbon = (q10, q90), label = label)
     return nothing
 end
 
